@@ -6,6 +6,7 @@ import (
 	"backend/my-little-kanvas/configs"
 	"backend/my-little-kanvas/routes"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,6 +19,7 @@ func main() {
 	configs.ConnectDB()
 
 	// setup routes
+	router.Use(cors.Default())
 	routes.TodoRoute(router)
 	
 	// Tell the server to run on port 8080

@@ -49,6 +49,30 @@ func GetTodos() gin.HandlerFunc {
 	}
 }
 
+func GetTodoById() gin.HandlerFunc {
+    return func(c *gin.Context) {
+		// get context
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		id := c.Param("id")
+		var todo models.Todo
+		defer cancel()
+		
+		// get object id from param string
+		oid, _ := primitive.ObjectIDFromHex(id)
+
+		//validate the request body
+        err := todoCollection.FindOne(ctx, bson.M{"_id": oid}).Decode(&todo)
+
+		if err != nil  {
+			c.IndentedJSON(http.StatusInternalServerError, gin.H{"message":"Internal server error"})
+			return
+		}
+
+		// if updated, returns JSON object of todo
+		c.IndentedJSON(http.StatusOK, todo)
+	}
+}
+
 func EditTodo() gin.HandlerFunc {
     return func(c *gin.Context) {
 		// get context
@@ -86,6 +110,30 @@ func EditTodo() gin.HandlerFunc {
 
 		// if updated, returns JSON object of todo
 		c.IndentedJSON(http.StatusOK, todo)
+	}
+}
+
+func GetListById() gin.HandlerFunc {
+    return func(c *gin.Context) {
+		// get context
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		id := c.Param("id")
+		var list models.TodoList
+		defer cancel()
+		
+		// get object id from param string
+		oid, _ := primitive.ObjectIDFromHex(id)
+
+		//validate the request body
+        err := listsCollection.FindOne(ctx, bson.M{"_id": oid}).Decode(&list)
+
+		if err != nil  {
+			c.IndentedJSON(http.StatusInternalServerError, gin.H{"message":"Internal server error"})
+			return
+		}
+
+		// if updated, returns JSON object of todo
+		c.IndentedJSON(http.StatusOK, list)
 	}
 }
 
