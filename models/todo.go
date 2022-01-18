@@ -1,13 +1,20 @@
 package models
 
-import "gopkg.in/mgo.v2/bson"
+import "go.mongodb.org/mongo-driver/bson/primitive"
 
 // Define object typing for Todo model
 type Todo struct {
 	// define attribute and json notation when serialized
 	// also tells how bson is gonna be stored
 	// looks like decorators
-	Id  bson.ObjectId `json:"id" bson:"_id"`
-	Title string `json:"title" bson:"title"`
-	Status string `json:"status" bson:"status"`
+	Id  primitive.ObjectID `json:"id,omitempty" bson:"_id"`
+	Title string `json:"title,omitempty" validate:"required"`
+	Status string `json:"status,omitempty" validate:"required"`
+}
+
+type TodoList struct {
+	Id primitive.ObjectID `json:"id,omitempty" bson:"_id"`
+	Title string `json:"title,omitempty" validate:"required"`
+	StatusName string `json:"statusName,omitempty" validate:"required"`
+	CardIds []primitive.ObjectID `json:"cardIds,omitempty"`
 }
