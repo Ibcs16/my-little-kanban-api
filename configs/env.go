@@ -16,7 +16,7 @@ func EnvMongoURI() string {
     return os.Getenv("MONGOURI")
 }
 
-func LocalPort() string {
+func GetPort() string {
     err := godotenv.Load()
     if err != nil {
         log.Println("Error loading .env file for port")

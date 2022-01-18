@@ -16,5 +16,6 @@ type TodoList struct {
 	Id primitive.ObjectID `json:"id,omitempty" bson:"_id"`
 	Title string `json:"title,omitempty" validate:"required"`
 	StatusName string `json:"statusName,omitempty" validate:"required"`
-	CardIds []primitive.ObjectID `json:"cardIds,omitempty"`
+	CardIds []primitive.ObjectID `json:"cardIds"`
+	Order string `json:"order,omitempty"`
 }

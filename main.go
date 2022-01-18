@@ -5,7 +5,6 @@ package main
 import (
 	"backend/my-little-kanvas/configs"
 	"backend/my-little-kanvas/routes"
-	"net/http"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -23,12 +22,8 @@ func main() {
 	router.Use(cors.Default())
 	routes.TodoRoute(router)
 	
-	// Tell the server to run on port 8080
-	port := configs.LocalPort()
-   
-	router.GET("/", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "<html><body><h2>Hello world</h2></body></html>", nil)
-	})
+	port := configs.GetPort()
 	
+	// Tell the server to run on the specific port
 	router.Run(":"+port)
 }
