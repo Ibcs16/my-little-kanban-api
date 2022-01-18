@@ -23,5 +23,7 @@ func main() {
 	routes.TodoRoute(router)
 	
 	// Tell the server to run on port 8080
-	router.Run("localhost:8080")
+	port := configs.LocalPort()
+   
+	router.Run("localhost:"+port)
 }
