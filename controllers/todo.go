@@ -141,8 +141,32 @@ func CreateTodo() gin.HandlerFunc {
 			return
 		}
 
+		var findList models.TodoList
+       
+        errList := listsCollection.FindOne(ctx, bson.M{"statusName": todo.Status}).Decode(&findList)
+		if errList != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"message":"List not found", "error": err.Error()})
+			return
+		}
+        
+		// get updated object
+		findList.CardIds = append(findList.CardIds, newTodo.Id)
+		update := bson.M{"cardIds": findList.CardIds}
+		// persist update
+        listUpdateResult, errList := listsCollection.UpdateOne(ctx, bson.M{"_id": findList.Id}, bson.M{"$set": update})
+
+		if errList != nil  {
+			c.IndentedJSON(http.StatusInternalServerError, gin.H{"message":"Internal server error", "error": err.Error()})
+			return
+		}
+
+        if listUpdateResult.MatchedCount < 1  {
+            c.IndentedJSON(http.StatusNotFound, gin.H{"message":"Not found"})
+            return
+		}
+
 		// if updated, returns JSON object of todo
-		c.IndentedJSON(http.StatusOK, newTodo)
+		c.IndentedJSON(http.StatusOK, gin.H{"todo":newTodo, "list": findList})
 	}
 }
 
@@ -234,9 +258,9 @@ func EditListCardIds() gin.HandlerFunc {
             return
 		}
 
-		var updatedUser models.TodoList
+		var updatedList models.TodoList
         if result.MatchedCount == 1 {
-            err := listsCollection.FindOne(ctx, bson.M{"_id": oid}).Decode(&updatedUser)
+            err := listsCollection.FindOne(ctx, bson.M{"_id": oid}).Decode(&updatedList)
             if err != nil {
                 c.JSON(http.StatusInternalServerError, gin.H{"message":"Internal server error", "error": err.Error()})
                 return
@@ -244,6 +268,6 @@ func EditListCardIds() gin.HandlerFunc {
         }
         
 		// if updated, returns JSON object of todo
-		c.IndentedJSON(http.StatusOK, updatedUser)
+		c.IndentedJSON(http.StatusOK, updatedList)
 	}
 }
