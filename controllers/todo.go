@@ -113,6 +113,39 @@ func EditTodo() gin.HandlerFunc {
 	}
 }
 
+func CreateTodo() gin.HandlerFunc {
+    return func(c *gin.Context) {
+		// get context
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	
+		var todo models.Todo
+		defer cancel()
+
+		//validate the request body
+        if err := c.BindJSON(&todo); err != nil {
+            c.JSON(http.StatusBadRequest, gin.H{"message":"Bad request"})
+            return
+        }
+
+		newTodo := models.Todo{
+            Id:       primitive.NewObjectID(),
+            Title:     todo.Title,
+            Status: todo.Status,
+        }
+
+		// persist update
+        _, err := todoCollection.InsertOne(ctx, newTodo)
+
+		if err != nil  {
+			c.IndentedJSON(http.StatusInternalServerError, gin.H{"message":"Internal server error"})
+			return
+		}
+
+		// if updated, returns JSON object of todo
+		c.IndentedJSON(http.StatusOK, newTodo)
+	}
+}
+
 func GetListById() gin.HandlerFunc {
     return func(c *gin.Context) {
 		// get context
