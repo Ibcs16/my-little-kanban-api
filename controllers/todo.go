@@ -217,7 +217,8 @@ func DeleteTodo() gin.HandlerFunc {
 			}
 		}
 		// get new list without card id
-		newCardIds := append(findList.CardIds[:removeIndex], findList.CardIds[removeIndex+1:]...)
+		newCardIds := findList.CardIds
+		newCardIds = append(newCardIds[:removeIndex], newCardIds[removeIndex+1:]...)
 		update := bson.M{"cardIds": newCardIds}
 		// persist update
         listUpdateResult, errList := listsCollection.UpdateOne(ctx, bson.M{"_id": findList.Id}, bson.M{"$set": update})
