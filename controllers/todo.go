@@ -127,13 +127,14 @@ func CreateTodo() gin.HandlerFunc {
             return
         }
 
+		// create new variable with id
 		newTodo := models.Todo{
             Id:       primitive.NewObjectID(),
             Title:     todo.Title,
             Status: todo.Status,
         }
 
-		// persist update
+		// insert document
         _, err := todoCollection.InsertOne(ctx, newTodo)
 
 		if err != nil  {
@@ -143,16 +144,18 @@ func CreateTodo() gin.HandlerFunc {
 
 		var findList models.TodoList
        
+		// find list to add new card id
         errList := listsCollection.FindOne(ctx, bson.M{"statusName": todo.Status}).Decode(&findList)
 		if errList != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"message":"List not found", "error": err.Error()})
 			return
 		}
         
-		// get updated object
+		// add card id to list
 		findList.CardIds = append(findList.CardIds, newTodo.Id)
 		update := bson.M{"cardIds": findList.CardIds}
-		// persist update
+
+		// update list with new card id
         listUpdateResult, errList := listsCollection.UpdateOne(ctx, bson.M{"_id": findList.Id}, bson.M{"$set": update})
 
 		if errList != nil  {
@@ -167,6 +170,70 @@ func CreateTodo() gin.HandlerFunc {
 
 		// if updated, returns JSON object of todo
 		c.IndentedJSON(http.StatusOK, newTodo)
+	}
+}
+
+func DeleteTodo() gin.HandlerFunc {
+    return func(c *gin.Context) {
+		// get context
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		id := c.Param("id")
+		var oldTodo models.Todo
+		defer cancel()
+		
+		// get object id from param string
+		oid, _ := primitive.ObjectIDFromHex(id)
+
+		// find todo to remove
+		findTodoErr := todoCollection.FindOne(ctx, bson.M{"_id": oid}).Decode(&oldTodo)
+
+		if findTodoErr != nil  {
+			c.IndentedJSON(http.StatusNotFound, gin.H{"message":"Not Found"})
+			return
+		}
+		// remove todo
+        removeTodoResult, err := todoCollection.DeleteOne(ctx, bson.M{"_id": oid})
+
+		if err != nil  {
+			c.IndentedJSON(http.StatusInternalServerError, gin.H{"message":"Internal server error"})
+			return
+		}
+
+		var findList models.TodoList
+       
+		// find list to remove card id
+        errList := listsCollection.FindOne(ctx, bson.M{"statusName": oldTodo.Status}).Decode(&findList)
+
+		if errList != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"message":"List not found", "error": err.Error()})
+			return
+		}
+        
+		// get cardId index
+		var removeIndex int
+		for k, v := range findList.CardIds {
+			if oid == v {
+				removeIndex = k
+			}
+		}
+		// get new list without card id
+		newCardIds := append(findList.CardIds[:removeIndex], findList.CardIds[removeIndex+1:]...)
+		update := bson.M{"cardIds": newCardIds}
+		// persist update
+        listUpdateResult, errList := listsCollection.UpdateOne(ctx, bson.M{"_id": findList.Id}, bson.M{"$set": update})
+
+		if errList != nil  {
+			c.IndentedJSON(http.StatusInternalServerError, gin.H{"message":"Internal server error", "error": err.Error()})
+			return
+		}
+
+        if listUpdateResult.MatchedCount < 1  {
+            c.IndentedJSON(http.StatusNotFound, gin.H{"message":"Not found"})
+            return
+		}
+
+		// if updated nothing
+		c.IndentedJSON(http.StatusOK, gin.H{"deleted":removeTodoResult.DeletedCount})
 	}
 }
 
