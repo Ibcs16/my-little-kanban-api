@@ -166,7 +166,7 @@ func CreateTodo() gin.HandlerFunc {
 		}
 
 		// if updated, returns JSON object of todo
-		c.IndentedJSON(http.StatusOK, gin.H{"todo":newTodo, "list": findList})
+		c.IndentedJSON(http.StatusOK, newTodo)
 	}
 }
 
