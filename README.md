@@ -3,7 +3,8 @@
 A RESTful API built with Go and Gin framework
 
 ### Live 🚀
-GET https://my-little-kanban.herokuapp.com/todos
+APP https://my-little-kanban.vercel.app/
+API https://my-little-kanban.herokuapp.com/todos
 
 ### Technologies ✨
 - Golang
