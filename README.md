@@ -8,7 +8,15 @@ GET https://my-little-kanban.herokuapp.com/todos
 ### Technologies ✨
 - Golang
 - Gin framework
-- mongodb database 
+- mongodb database
+
+### Features ✅
+- Add todo
+- List todos
+- Edit Todo
+- Delete Todo
+- Get todo lists
+- Update todo lists cards ordering
 
 # Install dependencies
 
